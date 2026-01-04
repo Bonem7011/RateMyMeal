@@ -1,24 +1,28 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { useEffect } from 'react';
+import { initDatabase } from '../db/database'; // Importe ta fonction
+import { View, ActivityIndicator } from 'react-native';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  
+  useEffect(() => {
+    // Au lancement de l'app, on crée la table
+    initDatabase();
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack>
+      {/* Configuration de l'écran d'accueil (Tabs) */}
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      
+      {/* On prépare la route pour ajouter un repas (en mode Modal) */}
+      <Stack.Screen 
+        name="add-meal" 
+        options={{ 
+          presentation: 'modal', 
+          title: 'Nouveau Repas' 
+        }} 
+      />
+    </Stack>
   );
 }
