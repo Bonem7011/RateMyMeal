@@ -1,64 +1,78 @@
-import { View, Text, TextInput, Button, Image, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { db } from '../db/database'; // On importe notre connexion DB
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, Button, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { db } from '../db/database';
 
 export default function AddMealScreen() {
   const router = useRouter();
 
-  // --- 1. Les États (Ce que l'utilisateur remplit) ---
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
-  const [rating, setRating] = useState(3); // Note par défaut 3/5
+  const [rating, setRating] = useState(3);
   const [imageUri, setImageUri] = useState<string | null>(null);
 
-  // --- 2. Fonction Caméra ---
+  // --- OPTION 1 : CAMERA ---
   const takePhoto = async () => {
-    // Permission
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
       Alert.alert("Erreur", "Permission caméra refusée");
       return;
     }
-
-    // Lancement caméra
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true, // Carré parfait
+      allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.5, // Compression
+      quality: 0.5,
     });
-
-    if (!result.canceled) {
-      setImageUri(result.assets[0].uri);
-    }
+    if (!result.canceled) setImageUri(result.assets[0].uri);
   };
 
-  // --- 3. Fonction Sauvegarde  ---
+  // --- OPTION 2 : GALERIE  ---
+  const pickImage = async () => {
+    // Pas besoin de permission explicite pour la galerie sur les OS récents
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Photos seulement
+      allowsEditing: true, // Carré
+      aspect: [1, 1],
+      quality: 0.5,
+    });
+    if (!result.canceled) setImageUri(result.assets[0].uri);
+  };
+
+  // --- LE MENU DE CHOIX ---
+  const showImageSourceOptions = () => {
+    Alert.alert(
+      "Photo du plat",
+      "Quelle source choisir ?",
+      [
+        { text: "Caméra 📸", onPress: takePhoto },
+        { text: "Galerie 🖼️", onPress: pickImage },
+        { text: "Annuler", style: "cancel", onPress: () => {} }
+      ]
+    );
+  };
+
+  // --- SAUVEGARDE ---
   const saveMeal = async () => {
-    // Validation simple
     if (!name.trim()) {
       Alert.alert("Oups", "Donne un nom à ton plat !");
       return;
     }
     if (!imageUri) {
-      Alert.alert("Oups", "Prends une photo du plat !");
+      Alert.alert("Oups", "Il faut une photo (Caméra ou Galerie) !");
       return;
     }
 
     try {
-      // Insertion SQL
       await db.runAsync(
         'INSERT INTO meals (name, rating, imageUri, comment, date) VALUES (?, ?, ?, ?, ?)',
         name,
         rating,
         imageUri,
         comment,
-        Date.now() // On stocke la date actuelle
+        Date.now()
       );
-
-      // Succès -> On revient à l'accueil
       router.back();
     } catch (error) {
       console.error(error);
@@ -69,19 +83,22 @@ export default function AddMealScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       
-      {/* Zone Photo */}
-      <TouchableOpacity onPress={takePhoto} style={styles.imageContainer}>
+      {/* Au clic, on lance le MENU (showImageSourceOptions)  */}
+      <TouchableOpacity onPress={showImageSourceOptions} style={styles.imageContainer}>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.image} />
         ) : (
           <View style={styles.placeholder}>
-            <Ionicons name="camera" size={40} color="#ccc" />
-            <Text style={{ color: '#ccc' }}>Toucher pour prendre une photo</Text>
+            {/* On affiche deux petites icônes pour montrer qu'on a le choix */}
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+                <Ionicons name="camera" size={40} color="#ccc" />
+                <Ionicons name="images" size={40} color="#ccc" />
+            </View>
+            <Text style={{ color: '#ccc', marginTop: 10 }}>Toucher pour choisir une photo</Text>
           </View>
         )}
       </TouchableOpacity>
 
-      {/* Champs Texte */}
       <Text style={styles.label}>Nom du plat</Text>
       <TextInput 
         style={styles.input} 
@@ -90,7 +107,6 @@ export default function AddMealScreen() {
         onChangeText={setName}
       />
 
-      {/* Note (Étoiles) */}
       <Text style={styles.label}>Ta note : {rating}/5</Text>
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -113,7 +129,6 @@ export default function AddMealScreen() {
         multiline
       />
 
-      {/* Boutons */}
       <View style={{ marginTop: 20, gap: 10 }}>
         <Button title="Enregistrer le repas" onPress={saveMeal} color="#e65100" />
         <Button title="Annuler" onPress={() => router.back()} color="gray" />
