@@ -1,50 +1,42 @@
-# Welcome to your Expo app 👋
+# RateMyMeal 🍔
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Application mobile de suivi et de notation de repas, développée dans le cadre du cursus Informatique (3ème Bachelier).
 
-## Get started
+**RateMyMeal** permet aux utilisateurs de photographier leurs plats, de les noter, de les commenter et de gérer une liste de favoris. L'application est conçue pour fonctionner totalement hors-ligne grâce à une base de données locale.
 
-1. Install dependencies
+## 📱 Fonctionnalités Principales
 
-   ```bash
-   npm install
-   ```
+- **📸 Capture Native :** Prise de photos de plats via l'appareil photo du téléphone ou sélection depuis la galerie (Module `expo-image-picker`).
+- **💾 Persistance des Données :** Tous les repas sont stockés localement sur l'appareil via une base de données **SQLite**. Les données survivent au redémarrage de l'application.
+- **❤️ Gestion des Favoris :** Système de "Like" instantané géré par un état global (**Zustand**). Les favoris sont synchronisés entre l'écran d'accueil et l'onglet dédié.
+- **🧭 Navigation Fluide :** Architecture moderne basée sur **Expo Router** combinant :
+  - *Tabs* (Onglets Accueil / Favoris).
+  - *Stack* (Navigation en profondeur).
+  - *Modals* (Formulaires d'ajout).
 
-2. Start the app
+## 🛠️ Stack Technique
 
-   ```bash
-   npx expo start
-   ```
+Ce projet met en œuvre les technologies modernes de l'écosystème React Native :
 
-In the output, you'll find options to open the app in a
+- **Framework :** React Native & Expo (SDK 52)
+- **Langage :** TypeScript
+- **Navigation :** Expo Router (File-based routing)
+- **Base de Données :** `expo-sqlite` (Architecture relationnelle)
+- **Gestion d'État :** `zustand` + Middleware de persistance
+- **Composants :** `FlatList` optimisée, `Image`, `Modal`
+- **Build :** EAS (Expo Application Services) pour la génération d'APK
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 📂 Architecture du Projet
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Le projet suit une structure modulaire stricte :
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```text
+RateMyMeal/
+├── app/                 # Écrans et Routes (Expo Router)
+│   ├── (tabs)/          # Navigation par onglets (Accueil, Favoris)
+│   ├── _layout.tsx      # Configuration globale (Stack, Providers)
+│   └── add-meal.tsx     # Écran modal d'ajout de repas
+├── components/          # Composants réutilisables (MealCard...)
+├── db/                  # Configuration et initialisation SQLite
+├── store/               # Stores globaux (Zustand - Favoris)
+└── constants/           # Types TypeScript et constantes de style
